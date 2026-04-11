@@ -1,23 +1,39 @@
-import { FC, useMemo } from 'react';
+import { FC, useEffect, useMemo } from 'react';
+import { useParams } from 'react-router-dom';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient } from '@utils-types';
+import { useDispatch, useSelector } from '../../services/store';
+import { getIngredients } from '../../services/slices/ingredientsSlice';
+import {
+  clearOrderInfo,
+  fetchOrderByNumber,
+  getOrderInfoData,
+  getOrderInfoError,
+  getOrderInfoLoading
+} from '../../services/slices/orderInfoSlice';
 
 export const OrderInfo: FC = () => {
-  /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { number } = useParams();
+  const dispatch = useDispatch();
 
-  const ingredients: TIngredient[] = [];
+  const ingredients = useSelector(getIngredients);
+  const orderData = useSelector(getOrderInfoData);
+  const isLoading = useSelector(getOrderInfoLoading);
+  const error = useSelector(getOrderInfoError);
 
-  /* Готовим данные для отображения */
+  useEffect(() => {
+    const orderNumber = Number(number);
+
+    if (orderNumber) {
+      dispatch(fetchOrderByNumber(orderNumber));
+    }
+
+    return () => {
+      dispatch(clearOrderInfo());
+    };
+  }, [dispatch, number]);
+
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -31,6 +47,7 @@ export const OrderInfo: FC = () => {
       (acc: TIngredientsWithCount, item) => {
         if (!acc[item]) {
           const ingredient = ingredients.find((ing) => ing._id === item);
+
           if (ingredient) {
             acc[item] = {
               ...ingredient,
@@ -38,7 +55,7 @@ export const OrderInfo: FC = () => {
             };
           }
         } else {
-          acc[item].count++;
+          acc[item].count += 1;
         }
 
         return acc;
@@ -59,8 +76,20 @@ export const OrderInfo: FC = () => {
     };
   }, [orderData, ingredients]);
 
-  if (!orderInfo) {
+  if (isLoading || !ingredients.length) {
     return <Preloader />;
+  }
+
+  if (error) {
+    return <div className='text text_type_main-medium pt-10'>{error}</div>;
+  }
+
+  if (!orderInfo) {
+    return (
+      <div className='text text_type_main-medium pt-10'>
+        Не удалось загрузить данные заказа
+      </div>
+    );
   }
 
   return <OrderInfoUI orderInfo={orderInfo} />;
