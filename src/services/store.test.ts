@@ -1,48 +1,26 @@
 import { rootReducer } from './store';
+import { ingredientsReducer } from './slices/ingredientsSlice';
+import { feedReducer } from './slices/feedSlice';
+import { orderInfoReducer } from './slices/orderInfoSlice';
+import { userReducer } from './slices/userSlice';
+import { constructorReducer } from './slices/constructorSlice';
+import { burgerOrderReducer } from './slices/burgerOrderSlice';
+import { profileOrdersReducer } from './slices/profileOrdersSlice';
 
 describe('rootReducer', () => {
-  it('должен возвращать корректное начальное состояние при неизвестном экшене', () => {
-    const state = rootReducer(undefined, { type: 'UNKNOWN_ACTION' });
+  it('должен возвращать корректное начальное состояние', () => {
+    const initAction = { type: '@@INIT' };
+
+    const state = rootReducer(undefined, initAction);
 
     expect(state).toEqual({
-      ingredients: {
-        ingredients: [],
-        isLoading: false,
-        error: null
-      },
-      feed: {
-        orders: [],
-        total: 0,
-        totalToday: 0,
-        isLoading: false,
-        error: null
-      },
-      orderInfo: {
-        orderData: null,
-        isLoading: false,
-        error: null
-      },
-      user: {
-        user: null,
-        isAuthChecked: false,
-        isAuthenticated: false,
-        isLoading: false,
-        error: null
-      },
-      burgerConstructor: {
-        bun: null,
-        ingredients: []
-      },
-      burgerOrder: {
-        orderRequest: false,
-        orderModalData: null,
-        error: null
-      },
-      profileOrders: {
-        orders: [],
-        isLoading: false,
-        error: null
-      }
+      ingredients: ingredientsReducer(undefined, initAction),
+      feed: feedReducer(undefined, initAction),
+      orderInfo: orderInfoReducer(undefined, initAction),
+      user: userReducer(undefined, initAction),
+      burgerConstructor: constructorReducer(undefined, initAction),
+      burgerOrder: burgerOrderReducer(undefined, initAction),
+      profileOrders: profileOrdersReducer(undefined, initAction)
     });
   });
 });
